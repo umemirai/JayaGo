@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
@@ -23,20 +24,17 @@ class AuthController extends Controller
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
 
-            // Reset Spatie permission cache
             app()[PermissionRegistrar::class]->forgetCachedPermissions();
-
             $user = auth()->user();
+$role = $user->role ?? ($user->hasRole('kasir') ? 'kasir' : ($user->hasRole('pegawai_gudang') ? 'pegawai_gudang' : 'default'));
 
-            if ($user->hasRole('kasir')) {
-                return redirect('/kasir/pos');
-            }
-
-            if ($user->hasRole('pegawai_gudang')) {
-                return redirect('/gudang');
-            }
-
-            return redirect('/');
+return match($role) {
+    'manajer'        => redirect('/manajer/dashboard'),
+    'kasir'          => redirect('/kasir/pos'),
+    'pegawai_gudang' => redirect('/gudang'),
+    'supervisor'     => redirect('/kasir/pos'),
+    default          => redirect('/login'),
+};
         }
 
         return back()->withErrors([
