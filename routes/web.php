@@ -36,4 +36,19 @@ Route::middleware('auth')->group(function () {
         Route::post('/mutasi',   [MutationController::class, 'store'])->name('mutation.store');
         Route::get('/notifikasi',[StockInController::class, 'notifications'])->name('notif');
     });
+
+    // ===== MANAJER =====
+    Route::middleware('cek.role:manajer')->prefix('manajer')->name('manajer.')->group(function () {
+        Route::get('/dashboard', [\App\Http\Controllers\Manajer\DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/laporan/transaksi', [\App\Http\Controllers\Manajer\LaporanController::class, 'transaksi'])->name('laporan.transaksi');
+        Route::get('/laporan/transaksi/export', [\App\Http\Controllers\Manajer\LaporanController::class, 'exportTransaksi'])->name('laporan.transaksi.export');
+        Route::get('/laporan/stok', [\App\Http\Controllers\Manajer\LaporanController::class, 'stok'])->name('laporan.stok');
+        Route::get('/laporan/stok/export', [\App\Http\Controllers\Manajer\LaporanController::class, 'exportStok'])->name('laporan.stok.export');
+        Route::get('/sdm', [\App\Http\Controllers\Manajer\SdmController::class, 'index'])->name('sdm.index');
+        Route::get('/sdm/create', [\App\Http\Controllers\Manajer\SdmController::class, 'create'])->name('sdm.create');
+        Route::post('/sdm', [\App\Http\Controllers\Manajer\SdmController::class, 'store'])->name('sdm.store');
+        Route::get('/sdm/{user}/edit', [\App\Http\Controllers\Manajer\SdmController::class, 'edit'])->name('sdm.edit');
+        Route::put('/sdm/{user}', [\App\Http\Controllers\Manajer\SdmController::class, 'update'])->name('sdm.update');
+        Route::delete('/sdm/{user}', [\App\Http\Controllers\Manajer\SdmController::class, 'destroy'])->name('sdm.destroy');
+    });
 });
