@@ -26,15 +26,24 @@ class AuthController extends Controller
 
             app()[PermissionRegistrar::class]->forgetCachedPermissions();
             $user = auth()->user();
-$role = $user->role ?? ($user->hasRole('kasir') ? 'kasir' : ($user->hasRole('pegawai_gudang') ? 'pegawai_gudang' : 'default'));
 
-return match($role) {
-    'manajer'        => redirect('/manajer/dashboard'),
-    'kasir'          => redirect('/kasir/pos'),
-    'pegawai_gudang' => redirect('/gudang'),
-    'supervisor'     => redirect('/kasir/pos'),
-    default          => redirect('/login'),
-};
+            if ($user->hasRole('manajer')) {
+                return redirect('/manajer/dashboard');
+            }
+
+            if ($user->hasRole('kasir')) {
+                return redirect('/kasir/pos');
+            }
+
+            if ($user->hasRole('pegawai_gudang')) {
+                return redirect('/gudang');
+            }
+
+            if ($user->hasRole('supervisor')) {
+                return redirect()->intended(route('supervisor.monitoring'));
+            }
+
+            return redirect('/');
         }
 
         return back()->withErrors([
@@ -45,8 +54,10 @@ return match($role) {
     public function logout(Request $request)
     {
         Auth::logout();
+
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
         return redirect()->route('login');
     }
 }
