@@ -24,10 +24,12 @@ class AuthController extends Controller
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
 
-            // Reset Spatie permission cache
             app()[PermissionRegistrar::class]->forgetCachedPermissions();
-
             $user = auth()->user();
+
+            if ($user->hasRole('manajer')) {
+                return redirect('/manajer/dashboard');
+            }
 
             if ($user->hasRole('kasir')) {
                 return redirect('/kasir/pos');
@@ -52,8 +54,10 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         Auth::logout();
+
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
         return redirect()->route('login');
     }
 }
