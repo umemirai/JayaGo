@@ -1,9 +1,11 @@
 <?php
+
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Kasir\PosController;
 use App\Http\Controllers\Kasir\ShiftController;
 use App\Http\Controllers\Gudang\StockInController;
 use App\Http\Controllers\Gudang\MutationController;
+use App\Http\Controllers\Supervisor\DashboardController; // <- Controller baru kita
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn() => redirect('/login'));
@@ -34,6 +36,15 @@ Route::middleware('auth')->group(function () {
         Route::post('/stock-in', [StockInController::class, 'store'])->name('stock.in.store');
         Route::get('/mutasi',    [MutationController::class, 'index'])->name('mutation');
         Route::post('/mutasi',   [MutationController::class, 'store'])->name('mutation.store');
-        Route::get('/notifikasi',[StockInController::class, 'notifications'])->name('notif');
+        Route::get('/notifikasi', [StockInController::class, 'notifications'])->name('notif');
+    });
+
+    // ===== SUPERVISOR =====
+    Route::middleware(['auth'])->prefix('supervisor')->name('supervisor.')->group(function () {
+        Route::view('/monitoring', 'supervisor.monitoring')->name('monitoring');
+        Route::view('/void', 'supervisor.void')->name('void');
+        Route::view('/opname', 'supervisor.opname')->name('opname');
+        Route::view('/audit', 'supervisor.audit')->name('audit');
+        Route::redirect('/', '/supervisor/monitoring');
     });
 });

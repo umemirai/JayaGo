@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
@@ -34,6 +35,10 @@ class AuthController extends Controller
 
             if ($user->hasRole('pegawai_gudang')) {
                 return redirect('/gudang');
+            }
+
+            if ($user->hasRole('supervisor')) {
+                return redirect()->intended(route('supervisor.monitoring'));
             }
 
             return redirect('/');
