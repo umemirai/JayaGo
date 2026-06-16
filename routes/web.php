@@ -6,6 +6,7 @@ use App\Http\Controllers\Kasir\ShiftController;
 use App\Http\Controllers\Gudang\StockInController;
 use App\Http\Controllers\Gudang\MutationController;
 use App\Http\Controllers\Supervisor\DashboardController;
+use App\Livewire\Gudang\StockOpnameForm;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn() => redirect('/login'));
@@ -32,12 +33,14 @@ Route::middleware('auth')->group(function () {
 
     // ===== PEGAWAI GUDANG =====
     Route::middleware('role:pegawai_gudang')->prefix('gudang')->name('gudang.')->group(function () {
-        Route::get('/', [StockInController::class, 'index'])->name('dashboard');
-        Route::get('/stock-in', [StockInController::class, 'create'])->name('stock.in');
-        Route::post('/stock-in', [StockInController::class, 'store'])->name('stock.in.store');
-        Route::get('/mutasi', [MutationController::class, 'index'])->name('mutation');
-        Route::post('/mutasi', [MutationController::class, 'store'])->name('mutation.store');
+        Route::get('/',           [StockInController::class, 'index'])->name('dashboard');
+        Route::get('/stock-in',   [StockInController::class, 'create'])->name('stock.in');
+        Route::post('/stock-in',  [StockInController::class, 'store'])->name('stock.in.store');
+        Route::get('/mutasi',     [MutationController::class, 'index'])->name('mutation');
+        Route::post('/mutasi',    [MutationController::class, 'store'])->name('mutation.store');
+        Route::get('/opname',     StockOpnameForm::class)->name('opname');
         Route::get('/notifikasi', [StockInController::class, 'notifications'])->name('notif');
+        Route::post('/notifikasi/{id}/read', [StockInController::class, 'markAsRead'])->name('notif.read');
     });
 
     // ===== SUPERVISOR =====
@@ -50,7 +53,7 @@ Route::middleware('auth')->group(function () {
     });
 
     // ===== MANAJER =====
-    Route::middleware('cek.role:manajer')->prefix('manajer')->name('manajer.')->group(function () {
+    Route::middleware('role:manajer')->prefix('manajer')->name('manajer.')->group(function () {
         Route::get('/dashboard', [\App\Http\Controllers\Manajer\DashboardController::class, 'index'])->name('dashboard');
         Route::get('/laporan/transaksi', [\App\Http\Controllers\Manajer\LaporanController::class, 'transaksi'])->name('laporan.transaksi');
         Route::get('/laporan/transaksi/export', [\App\Http\Controllers\Manajer\LaporanController::class, 'exportTransaksi'])->name('laporan.transaksi.export');

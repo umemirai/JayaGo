@@ -13,9 +13,10 @@ class MutationController extends Controller
     public function index()
     {
         $products  = Product::orderBy('name')->get();
+
         $mutations = StockMutation::with(['product', 'user'])
                                   ->orderByDesc('mutation_date')
-                                  ->paginate(20);
+                                  ->paginate(15);
 
         return view('gudang.mutation', compact('products', 'mutations'));
     }
@@ -24,42 +25,60 @@ class MutationController extends Controller
     {
         $validated = $request->validate([
             'product_id' => 'required|exists:products,id',
-            'type'       => 'required|in:display,in,adjustment',
+            'type'       => 'required|in:display,adjustment_in,adjustment_out',
             'quantity'   => 'required|integer|min:1',
             'notes'      => 'required|string|max:500',
+        ], [
+            'product_id.required' => 'Pilih produk terlebih dahulu.',
+            'type.required'       => 'Pilih jenis mutasi.',
+            'quantity.required'   => 'Jumlah wajib diisi.',
+            'quantity.min'        => 'Jumlah minimal 1.',
+            'notes.required'      => 'Catatan/alasan mutasi wajib diisi.',
         ]);
 
         DB::transaction(function () use ($validated) {
             $product   = Product::lockForUpdate()->findOrFail($validated['product_id']);
             $qtyBefore = $product->stock;
 
-            if ($validated['type'] === 'display') {
-                // Mutasi display: dari gudang ke rak — stok sama, hanya dicatat
-                // Jika sistemnya memisahkan stok gudang & display, adjust di sini
-                $change = 0;
-                $notes  = "[DISPLAY] " . $validated['notes'];
-            } elseif ($validated['type'] === 'adjustment') {
-                $change = $validated['quantity'];
-                $notes  = "[ADJUSTMENT] " . $validated['notes'];
-                $product->increment('stock', $change);
-            } else {
-                $change = $validated['quantity'];
-                $notes  = $validated['notes'];
-                $product->increment('stock', $change);
+            switch ($validated['type']) {
+                case 'display':
+                    // Perpindahan dari gudang ke rak — stok total tidak berubah,
+                    // hanya dicatat sebagai jejak audit perpindahan barang
+                    $change = 0;
+                    $label  = 'Perpindahan ke rak display';
+                    break;
+
+                case 'adjustment_in':
+                    // Penyesuaian stok bertambah (misal: ditemukan barang tercecer)
+                    $change = $validated['quantity'];
+                    $product->increment('stock', $change);
+                    $label  = 'Penyesuaian stok (+)';
+                    break;
+
+                case 'adjustment_out':
+                    // Penyesuaian stok berkurang (misal: rusak/hilang)
+                    $change = -$validated['quantity'];
+                    if ($validated['quantity'] > $product->stock) {
+                        throw new \Exception('Jumlah pengurangan melebihi stok tersedia.');
+                    }
+                    $product->decrement('stock', $validated['quantity']);
+                    $label  = 'Penyesuaian stok (-)';
+                    break;
             }
 
             StockMutation::create([
                 'product_id'      => $product->id,
                 'user_id'         => Auth::id(),
-                'type'            => $validated['type'],
+                'type'            => $validated['type'] === 'display' ? 'display' : 'out',
                 'quantity_before' => $qtyBefore,
-                'quantity_change' => $change,
+                'quantity_change' => $validated['type'] === 'display' ? $validated['quantity'] : $change,
                 'quantity_after'  => $product->fresh()->stock,
-                'notes'           => $notes,
+                'notes'           => "[{$label}] " . $validated['notes'],
                 'mutation_date'   => now(),
             ]);
         });
 
-        return redirect()->back()->with('success', 'Mutasi barang berhasil dicatat!');
+        return redirect()->route('gudang.mutation')
+                          ->with('success', 'Mutasi barang berhasil dicatat!');
     }
 }

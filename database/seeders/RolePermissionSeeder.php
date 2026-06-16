@@ -11,75 +11,59 @@ class RolePermissionSeeder extends Seeder
 {
     public function run(): void
     {
-        // Buat Role
-        $kasir     = Role::create(['name' => 'kasir']);
-        $gudang    = Role::create(['name' => 'pegawai_gudang']);
-        $supervisor = Role::create(['name' => 'supervisor']);
+        $kasir      = Role::firstOrCreate(['name' => 'kasir']);
+        $gudang     = Role::firstOrCreate(['name' => 'pegawai_gudang']);
+        $supervisor = Role::firstOrCreate(['name' => 'supervisor']);
+        $manajer    = Role::firstOrCreate(['name' => 'manajer']);
 
-        // Permission Kasir
         $kasirPermissions = [
-            'pos.access',
-            'transaction.create',
-            'transaction.view',
-            'shift.open',
-            'shift.close',
-            'shift.view',
-            'product.search',
+            'pos.access', 'transaction.create', 'transaction.view',
+            'shift.open', 'shift.close', 'shift.view', 'product.search',
         ];
-
-        // Permission Gudang
         $gudangPermissions = [
-            'stock.update',
-            'stock.mutation',
-            'stock.opname',
-            'product.view',
-            'product.create',
-            'product.edit',
-            'notification.view',
+            'stock.update', 'stock.mutation', 'stock.opname',
+            'product.view', 'product.create', 'product.edit', 'notification.view',
         ];
-
-        // Permission Supervisor
         $supervisorPermissions = [
-            'supervisor.dashboard',
-            'void.authorize',
-            'anti_fraud.monitor',
+            'supervisor.dashboard', 'void.authorize', 'anti_fraud.monitor',
         ];
 
-
-        foreach ($kasirPermissions as $perm) {
-            Permission::create(['name' => $perm]);
-        }
-        foreach ($gudangPermissions as $perm) {
-            Permission::create(['name' => $perm]);
-        }
-        foreach ($supervisorPermissions as $perm) {
-            Permission::create(['name' => $perm]);
+        foreach (array_merge($kasirPermissions, $gudangPermissions, $supervisorPermissions) as $perm) {
+            Permission::firstOrCreate(['name' => $perm]);
         }
 
         $kasir->syncPermissions($kasirPermissions);
         $gudang->syncPermissions($gudangPermissions);
         $supervisor->syncPermissions($supervisorPermissions);
 
-        // Buat Akun Demo
-        $userKasir = User::create([
-            'name' => 'Budi Kasir',
-            'email' => 'kasir@minimarket.test',
-            'password' => bcrypt('password'),
-        ]);
-        $userKasir->assignRole('kasir');
+        $cabang1 = \App\Models\Branch::firstOrCreate(
+            ['name' => 'Cabang Jakarta'],
+            ['address' => 'Jl. Sudirman No. 1, Jakarta', 'phone' => '021-1111111']
+        );
 
-        $userGudang = User::create([
-            'name' => 'Ani Gudang',
-            'email' => 'gudang@minimarket.test',
-            'password' => bcrypt('password'),
-        ]);
-        $userGudang->assignRole('pegawai_gudang');
+        User::firstOrCreate(
+            ['email' => 'kasir@minimarket.test'],
+            ['name' => 'Budi Kasir', 'password' => bcrypt('password')]
+        )->syncRoles(['kasir']);
 
-        $userSupervisor = User::create([
-            'name' => 'Alex Supervisor',
-            'email' => 'supervisor@minimarket.test',
-            'password' => bcrypt('password'),
-        ]);
-        $userSupervisor->assignRole('supervisor');
+        User::firstOrCreate(
+            ['email' => 'gudang@minimarket.test'],
+            ['name' => 'Ani Gudang', 'password' => bcrypt('password')]
+        )->syncRoles(['pegawai_gudang']);
+
+        User::firstOrCreate(
+            ['email' => 'supervisor@minimarket.test'],
+            ['name' => 'Alex Supervisor', 'password' => bcrypt('password')]
+        )->syncRoles(['supervisor']);
+
+        User::firstOrCreate(
+            ['email' => 'manajer.jakarta@jayago.com'],
+            ['name' => 'Manajer Jakarta', 'password' => bcrypt('password'), 'branch_id' => $cabang1->id]
+        )->syncRoles(['manajer']);
+
+        User::firstOrCreate(
+            ['email' => 'kasir.jakarta@jayago.com'],
+            ['name' => 'Kasir Jakarta', 'password' => bcrypt('password'), 'branch_id' => $cabang1->id]
+        )->syncRoles(['kasir']);
     }
 }
