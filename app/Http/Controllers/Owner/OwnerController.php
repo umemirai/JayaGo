@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Branch;
 use App\Models\User;
 use App\Models\Transaction;
+use Illuminate\Support\Facades\DB;
 
 class OwnerController extends Controller
 {
@@ -83,7 +84,7 @@ class OwnerController extends Controller
     }
 
     // 4. FUNGSI HAPUS DATA (DELETE)
-    public function deleteBranch($id)
+    public function deleteBranch(int $id)
     {
         // Cari data berdasarkan ID di rute, lalu eksekusi hapus
         $branch = Branch::findOrFail($id);
@@ -135,5 +136,12 @@ class OwnerController extends Controller
         $totalOmzet = $transactions->sum('total');
 
         return view('owner.reports', compact('transactions', 'startDate', 'endDate', 'totalOmzet'));
+    }
+
+    public function auditLog()
+    {
+        $logs = \DB::table('activity_logs')->latest()->get();
+
+        return view('owner.audit', compact('logs'));
     }
 }

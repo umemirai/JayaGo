@@ -8,7 +8,7 @@
     "require": {
         "php": "^8.3",
         "barryvdh/laravel-dompdf": "^3.1",
-        "laravel/framework": "^11.9",
+        "laravel/framework": "^13.8",
         "laravel/tinker": "^3.0",
         "livewire/livewire": "^4.3",
         "maatwebsite/excel": "^3.1",
@@ -20,7 +20,7 @@
         "laravel/pao": "^1.0.6",
         "laravel/pint": "^1.27",
         "mockery/mockery": "^1.6",
-        "nunomaduro/collision": "^8.1",
+        "nunomaduro/collision": "^8.6",
         "phpunit/phpunit": "^12.5.12"
     },
     "autoload": {
@@ -83,9 +83,6 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
-        },
-        "audit": {
-            "block-insecure": false
         }
     },
     "minimum-stability": "stable",
