@@ -43,7 +43,8 @@
         </div>
         @endif
 
-        {{ $slot }}
+        @yield('content')
+        {{ $slot ?? '' }}
     </main>
 
     @livewireScripts

@@ -13,7 +13,7 @@
     <nav class="bg-green-700 text-white px-4 py-2 flex items-center justify-between shadow-sm">
         <div class="flex items-center gap-3">
             <span class="font-bold text-lg">Jaygo</span>
-            <span class="bg-green-600 text-xs px-2 py-0.5 rounded-full">Manajer</span>
+            <span class="bg-green-600 text-xs px-2 py-0.5 rounded-full">Kysen Manajer</span>
         </div>
         <div class="flex items-center gap-4 text-sm">
             <span>{{ auth()->user()->name }}</span>

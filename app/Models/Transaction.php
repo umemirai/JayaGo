@@ -12,9 +12,10 @@ class Transaction extends Model
     protected $fillable = [
         'invoice_number',
         'user_id',
-        'subtotal',
-        'discount',
         'total',
+        'discount',
+
+        'subtotal',
         'paid',
         'change',
         'payment_method',
@@ -24,7 +25,7 @@ class Transaction extends Model
 
     protected $casts = [
         'transaction_date' => 'datetime',
-        'total'            => 'decimal:2',
+        'subtotal'            => 'decimal:2',
         'paid'             => 'decimal:2',
         'change'           => 'decimal:2',
     ];
@@ -35,6 +36,12 @@ class Transaction extends Model
     }
 
     public function cashier()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    // Alias agar query yang menggunakan relasi 'user' (misal di LaporanController) tetap berfungsi
+    public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
     }
