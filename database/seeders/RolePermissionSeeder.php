@@ -11,10 +11,21 @@ class RolePermissionSeeder extends Seeder
 {
     public function run(): void
     {
+        // Bersihkan cache Spatie terlebih dahulu agar tidak bentrok
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+
         // Buat Role
-        $kasir     = Role::create(['name' => 'kasir']);
-        $gudang    = Role::create(['name' => 'pegawai_gudang']);
+        $owner      = Role::create(['name' => 'owner']);
+        $manajer    = Role::create(['name' => 'manajer']);
+        $kasir      = Role::create(['name' => 'kasir']);
+        $gudang     = Role::create(['name' => 'pegawai_gudang']);
         $supervisor = Role::create(['name' => 'supervisor']);
+
+        // Permission Manajer
+        $manajerPermissions = [
+            'dashboard.view',
+            'report.view',
+        ];
 
         // Permission Kasir
         $kasirPermissions = [
@@ -45,7 +56,10 @@ class RolePermissionSeeder extends Seeder
             'anti_fraud.monitor',
         ];
 
-
+        // Create Permissions ke Database
+        foreach ($manajerPermissions as $perm) {
+            Permission::create(['name' => $perm]);
+        }
         foreach ($kasirPermissions as $perm) {
             Permission::create(['name' => $perm]);
         }
@@ -56,11 +70,13 @@ class RolePermissionSeeder extends Seeder
             Permission::create(['name' => $perm]);
         }
 
+        // Sinkronisasi Permission ke Masing-masing Role
+        $manajer->syncPermissions($manajerPermissions);
         $kasir->syncPermissions($kasirPermissions);
         $gudang->syncPermissions($gudangPermissions);
         $supervisor->syncPermissions($supervisorPermissions);
 
-        // Buat Akun Demo
+        // --- BUAT AKUN DEMO LAMA ---
         $userKasir = User::create([
             'name' => 'Budi Kasir',
             'email' => 'kasir@minimarket.test',
@@ -81,5 +97,40 @@ class RolePermissionSeeder extends Seeder
             'password' => bcrypt('password'),
         ]);
         $userSupervisor->assignRole('supervisor');
+
+        // --- BUAT DATA CABANG & AKUN TIM MANAJER ---
+        $cabang1 = \App\Models\Branch::create([
+            'name'    => 'Cabang Jakarta',
+            'address' => 'Jl. Sudirman No. 1, Jakarta',
+            'phone'   => '021-1111111',
+        ]);
+
+        // Akun Manajer Toko (Sudah sinkron Spatie + Kolom Text)
+        $userManajer = User::create([
+            'name'      => 'Manajer Jakarta',
+            'email'     => 'manajer.jakarta@jayago.com',
+            'password'  => bcrypt('password'),
+            'branch_id' => $cabang1->id,
+            'role'      => 'manajer',
+        ]);
+        $userManajer->assignRole('manajer');
+
+        // Akun Kasir Jakarta (Sudah sinkron Spatie + Kolom Text)
+        $userKasirJkt = User::create([
+            'name'      => 'Kasir Jakarta',
+            'email'     => 'kasir.jakarta@jayago.com',
+            'password'  => bcrypt('password'),
+            'branch_id' => $cabang1->id,
+            'role'      => 'kasir',
+        ]);
+        $userKasirJkt->assignRole('kasir');
+
+        $userOwner = User::create([
+            'name'      => 'Pak Jayusman (Owner)',
+            'email'     => 'owner@jayago.com',
+            'password'  => bcrypt('owner123'), // Password untuk login Owner
+            'role'      => 'owner',
+        ]);
+        $userOwner->assignRole('owner');
     }
 }

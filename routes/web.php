@@ -6,6 +6,7 @@ use App\Http\Controllers\Kasir\ShiftController;
 use App\Http\Controllers\Gudang\StockInController;
 use App\Http\Controllers\Gudang\MutationController;
 use App\Http\Controllers\Supervisor\DashboardController;
+use App\Http\Controllers\Owner\OwnerController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn() => redirect('/login'));
@@ -64,4 +65,25 @@ Route::middleware('auth')->group(function () {
         Route::delete('/sdm/{user}', [\App\Http\Controllers\Manajer\SdmController::class, 'destroy'])->name('sdm.destroy');
     });
 
+    Route::middleware(['auth', 'role:owner'])->prefix('owner')->name('owner.')->group(function () {
+
+        // 1. Global Dashboard
+        Route::get('/dashboard', [OwnerController::class, 'dashboard'])->name('dashboard');
+
+        // 2. CRUD Manajemen Cabang
+        Route::get('/branches', [OwnerController::class, 'branches'])->name('branches');
+        Route::post('/branches/store', [OwnerController::class, 'storeBranch'])->name('branches.store');
+        Route::post('/branches/update', [OwnerController::class, 'updateBranch'])->name('branches.update');
+        Route::get('/branches/delete/{id}', [OwnerController::class, 'deleteBranch'])->name('branches.delete');
+
+        // 3. CRUD Manajemen User & Penempatan Cabang
+        Route::get('/users', [OwnerController::class, 'users'])->name('users');
+
+        // JALUR SAKTI YANG DICARI BLADE: Kombinasi prefix name 'owner.' + 'users.updateBranch'
+        Route::post('/users/update-branch', [OwnerController::class, 'updateUserBranch'])->name('users.updateBranch');
+
+        // 4. Menu Lainnya
+        Route::get('/reports', [OwnerController::class, 'reports'])->name('reports');
+        Route::get('/audit-log', [OwnerController::class, 'auditLog'])->name('audit');
+    });
 });

@@ -18,7 +18,7 @@
 
     <nav class="bg-blue-600 text-white px-6 py-3 flex justify-between items-center shadow-md fixed top-0 left-0 right-0 z-50">
         <div class="flex items-center space-x-2">
-            <span class="font-semibold text-lg tracking-wide">JayMart</span>
+            <span class="font-semibold text-lg tracking-wide">JayGo</span>
             <span class="bg-blue-500 text-xs text-blue-100 px-3 py-0.5 rounded-full font-medium">Supervisor</span>
         </div>
 

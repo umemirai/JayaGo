@@ -27,6 +27,12 @@ class AuthController extends Controller
             app()[PermissionRegistrar::class]->forgetCachedPermissions();
             $user = auth()->user();
 
+            // --- TAMBAHKAN BLOK INI UNTUK OWNER ---
+            if ($user->hasRole('owner')) {
+                return redirect()->route('owner.dashboard');
+            }
+            // --------------------------------------
+
             if ($user->hasRole('manajer')) {
                 return redirect('/manajer/dashboard');
             }
